@@ -3,7 +3,7 @@
 Code for the paper
 
 > **A Second Opinion from the Face: Measured Facial Action Tokens for Multimodal Sentiment Analysis under Text–Visual Conflict**
-> Zijie Guo. Manuscript submitted to *Knowledge-Based Systems* (under review).
+> Zijie Guo. Manuscript in preparation for *Knowledge-Based Systems*.
 
 Per-frame facial action unit (AU) intensities, emotion probabilities and EMFACS-style AU products are estimated with
 [Py-Feat](https://py-feat.org), projected into BERT's word-embedding space and appended to the transcript as soft tokens, so that one
