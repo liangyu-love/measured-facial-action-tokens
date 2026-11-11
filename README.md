@@ -52,7 +52,8 @@ directories are selected with `MSA_DATA` (e.g. `outputs/full` for CH-SIMS v2, `o
 | Evidence maps and occlusion | `evi_bert.py`, `evi3.py`, `interp3.py` |
 | Significance, equivalence (TOST), McNemar and the full audit of reported numbers | `sig_tests.py`, `tune_sig.py`, `fastsig.py`, `audit.py` |
 | Computational cost | `bench_cost.py` |
-| Paper figures and the recomputation of figure data | `paper_figures/` |
+| Paper figures: method overview and analysis schematic (isometric SVG in HTML, exported to vector PDF with headless Chrome) | `paper_figures/fig_iso_method3.py`, `paper_figures/fig_analysis.py` |
+| Paper figures: results and evidence maps (matplotlib) and the recomputation of figure data | `paper_figures/fig_v8_results.py`, `paper_figures/fig_v8_evidence.py`, `paper_figures/export_evidence_panels.py`, `paper_figures/audit_submission_data.py` |
 
 The `run_*.sh` files are the job queues that produced the reported results, in roughly chronological order; every training script writes
 per-seed `*_test_pred.csv` files, and `audit.py` recomputes all metrics and tests from those files.
