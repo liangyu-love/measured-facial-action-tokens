@@ -1,0 +1,17 @@
+# Versions used for the paper (Python 3.12.3). Install torch 2.11.0 (CUDA 12.8) first; see constraints.txt.
+py-feat==2.1.5
+transformers==5.22.1
+accelerate==1.15.0
+peft==0.21.2
+bitsandbytes==0.50.2
+qwen-vl-utils==0.0.14
+scikit-learn==1.9.1
+scipy==1.18.1
+numpy==2.4.3
+pandas==3.1.1
+opensmile==2.6.0
+librosa==1.0.0
+soundfile==0.14.0
+imageio-ffmpeg==0.8.1
+pillow==12.1.1
+matplotlib==3.11.2
