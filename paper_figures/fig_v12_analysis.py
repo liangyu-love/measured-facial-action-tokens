@@ -1,21 +1,18 @@
-"""Figure 1 (isometric, 2026-11-11): measured facial action tokens. Hand-built isometric SVG inside an HTML page, exported to vector PDF
-by headless Chrome. Real data: frames 1/4/8 and the 33 x 8 Py-Feat measurement matrix of video_0006/0004. Palette: ink greys, one
-deep-teal accent reserved for the facial evidence, pale sand for the text path. Output: figures/v7/method_overview.{html,pdf,png}"""
-import base64
-import io
+"""Analysis figure (v12, 2026-11-12): explicit conflict-modelling modules examined on top of the soft-token model, and the two
+evaluation devices (capacity control, oracle reference). Structure only; outcomes are reported in the tables. Hand-built isometric SVG
+inside an HTML page, exported to vector PDF by headless Chrome. Output: figures/v12/analysis_modules.{html,pdf,png}"""
 import subprocess
 from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from PIL import Image
 
 P = Path(__file__).resolve().parents[1]
 F = P.parent / "results/outputs/full"
-OUT = P / "figures/v7"; OUT.mkdir(parents=True, exist_ok=True)
+OUT = P / "figures/v12"; OUT.mkdir(parents=True, exist_ok=True)
 KEY, HL = "video_0006/0004", 4
 CHROME = r"C:\Program Files\Google\Chrome\Application\chrome.exe"
-W_MM, H_MM = 172, 80
+W_MM, H_MM = 172, 66
 
 INK, SLATE, MUTE, MIST, TEAL, SAND = "#22262a", "#6b7178", "#9aa0a6", "#e7e5e0", "#1f6f78", "#b9a58a"
 
@@ -80,16 +77,8 @@ def path(d, color=SLATE, sw=0.28, dash=None, arrow=True, op=1.0):
 
 MATH = "Cambria, 'Cambria Math', 'Times New Roman', serif"
 
-# ------------------------------------------------------------------ 1) frames as standing isometric cards with the real images
-def frame_uri(i):
-    im = Image.open(P / "figures/assets/video_0006__0004" / f"F{i}.jpg").crop((326, 60, 786, 760)).resize((300, 456))
-    b = io.BytesIO(); im.save(b, "JPEG", quality=92)
-    return "data:image/jpeg;base64," + base64.b64encode(b.getvalue()).decode(), im.size
-
-
-
-exec(open(Path(__file__).with_name("fig_analysis_layout.py"), encoding="utf8").read())
-exec(open(Path(__file__).with_name("fig_analysis_controls.py"), encoding="utf8").read())
+exec(open(Path(__file__).with_name("fig_v12_analysis_layout.py"), encoding="utf8").read())
+exec(open(Path(__file__).with_name("fig_v12_analysis_controls.py"), encoding="utf8").read())
 
 # ------------------------------------------------------------------ page
 defs = "".join(f'<marker id="a{c[1:]}" viewBox="0 0 10 10" refX="8.6" refY="5" markerWidth="3.6" markerHeight="3.6" orient="auto-start-reverse">'

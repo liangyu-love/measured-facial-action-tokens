@@ -46,14 +46,14 @@ directories are selected with `MSA_DATA` (e.g. `outputs/full` for CH-SIMS v2, `o
 | Text-only BERT, AU text template, DEVA-style rule template, MLLM descriptions | `train_bert.py`, `measure_text.py`, `deva_text.py`, `deva_dense.py` |
 | MAG-style gating, late fusion, CLIP tokens | `au_soft.py --variant mag / late / soft_clip` |
 | Uniform tuning (same grid and budget for every method) and 10-seed runs | `tune.py`, `run_tune.sh` |
-| 5-fold cross-validation over all CH-SIMS v2 clips | `make_cv.py`, `run_cv.sh`, `run_cv2.sh`, `cv_compare.py` |
+| 5-fold cross-validation over all CH-SIMS v2 clips | `make_cv.py`, `run_cv.sh`, `run_cv2.sh`, `cv_compare.py`; tuned configurations (main text): `run_cv3.sh`, `cv_compare_tuned.py` |
 | MLLM descriptions, contradiction scoring, QLoRA SFT | `pilot.py desc/verify`, `gen_full.py`, `score_v3.py`, `scale_desc.py`, `sft_data.py`, `sft_qwenvl.py` |
 | Explicit conflict modelling (gates, experts, discrepancy tokens, cross-fitting, capacity controls, speech expert, trust and polarity heads) | `gate_*.py`, `xgate_bert.py`, `evq.py`, `pre_soft.py`, `texp.py`, `diff2.py`, `diff3.py`, `oof_experts.py`, `reg_experts.py`, `aexp.py`, `audio_expert_hubert.py`, `ext_*.py`, `pol_round.py`, `tri3_tuned.py` |
 | Evidence maps and occlusion | `evi_bert.py`, `evi3.py`, `interp3.py` |
 | Significance, equivalence (TOST), McNemar and the full audit of reported numbers | `sig_tests.py`, `tune_sig.py`, `fastsig.py`, `audit.py` |
 | Computational cost | `bench_cost.py` |
-| Paper figures: method overview and analysis schematic (isometric SVG in HTML, exported to vector PDF with headless Chrome) | `paper_figures/fig_iso_method3.py`, `paper_figures/fig_analysis.py` |
-| Paper figures: results and evidence maps (matplotlib) and the recomputation of figure data | `paper_figures/fig_v8_results.py`, `paper_figures/fig_v8_evidence.py`, `paper_figures/export_evidence_panels.py`, `paper_figures/audit_submission_data.py` |
+| Paper figures: method overview and analysis schematic (isometric SVG in HTML, exported to vector PDF with headless Chrome) | `paper_figures/fig_v12_method.py`, `paper_figures/fig_v12_analysis.py` |
+| Paper figures: results and evidence maps (matplotlib) and the recomputation of figure data | `paper_figures/fig_v9_bins.py`, `paper_figures/fig_v10_evidence.py`, `paper_figures/export_evidence_panels.py`, `paper_figures/audit_submission_data.py` |
 
 The `run_*.sh` files are the job queues that produced the reported results, in roughly chronological order; every training script writes
 per-seed `*_test_pred.csv` files, and `audit.py` recomputes all metrics and tests from those files.
