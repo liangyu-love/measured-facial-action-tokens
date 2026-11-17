@@ -2,12 +2,14 @@
 
 Code for the paper
 
-> **A Second Opinion from the Face: Measured Facial Action Tokens for Multimodal Sentiment Analysis under Text–Visual Conflict**
+> **Measure, Don't Describe: Facial Action Tokens as Lightweight Visual Evidence for Language Models in Multimodal Sentiment Analysis**
 > Zijie Guo. Manuscript in preparation for *Knowledge-Based Systems*.
 
 Per-frame facial action unit (AU) intensities, emotion probabilities and EMFACS-style AU products are estimated with
-[Py-Feat](https://py-feat.org), projected into BERT's word-embedding space and appended to the transcript as soft tokens, so that one
-encoder attends jointly to words and facial measurements. The repository also contains every baseline, the uniform tuning protocol, the
+[Py-Feat](https://py-feat.org), projected into the embedding space of a language model and appended to the transcript as soft tokens, so that one
+model attends jointly to words and facial measurements. The same tokens are used with an encoder (BERT) and with a decoder-only LLM
+(the language model of Qwen3-VL-4B, adapted with LoRA), where they are also compared with the same model watching the raw frames.
+The repository also contains every baseline, the uniform tuning protocol, the
 cross-validation over all CH-SIMS v2 clips, the explicit conflict-modelling analyses (gates, discrepancy tokens, cross-fitted experts,
 capacity controls, speech expert, polarity head), the MLLM-description study and the scripts that recompute every number in the paper
 from per-seed predictions.
@@ -49,11 +51,16 @@ directories are selected with `MSA_DATA` (e.g. `outputs/full` for CH-SIMS v2, `o
 | 5-fold cross-validation over all CH-SIMS v2 clips | `make_cv.py`, `run_cv.sh`, `run_cv2.sh`, `cv_compare.py`; tuned configurations (main text): `run_cv3.sh`, `cv_compare_tuned.py` |
 | MLLM descriptions, contradiction scoring, QLoRA SFT | `pilot.py desc/verify`, `gen_full.py`, `score_v3.py`, `scale_desc.py`, `sft_data.py`, `sft_qwenvl.py` |
 | Explicit conflict modelling (gates, experts, discrepancy tokens, cross-fitting, capacity controls, speech expert, trust and polarity heads) | `gate_*.py`, `xgate_bert.py`, `evq.py`, `pre_soft.py`, `texp.py`, `diff2.py`, `diff3.py`, `oof_experts.py`, `reg_experts.py`, `aexp.py`, `audio_expert_hubert.py`, `ext_*.py`, `pol_round.py`, `tri3_tuned.py` |
+| **LLM backbone** (Qwen3-VL-4B language model + LoRA): transcript only and + facial action tokens | `llm_pilot.py --variant text / au`, `run_llm_pilot.sh` |
+| LLM backbone: the same model watching the 8 frames through its vision encoder | `llm_vid.py --variant vid` (`LLM_BS` sets the micro-batch), `run_llm3.sh`, `run_llm7.sh` |
+| LLM backbone: expert token + trust head, capacity control (`--vctl zero`), experts without unimodal labels (`--exp m`), speech token, residual on the expert mean (`au_res`, `au_adj`) | `llm_diff.py`, `oof_experts_m.py`, `run_llm2.sh`, `run_llm4.sh`, `run_llm6.sh` |
+| LLM backbone: summary tables, paired tests and the late-average baseline (weight chosen on validation) | `llm_analysis.py`, `llm_adj_analysis.py` |
 | Evidence maps and occlusion | `evi_bert.py`, `evi3.py`, `interp3.py` |
 | Significance, equivalence (TOST), McNemar and the full audit of reported numbers | `sig_tests.py`, `tune_sig.py`, `fastsig.py`, `audit.py` |
 | Computational cost | `bench_cost.py` |
-| Paper figures: method overview and analysis schematic (isometric SVG in HTML, exported to vector PDF with headless Chrome) | `paper_figures/fig_v12_method.py`, `paper_figures/fig_v12_analysis.py` |
-| Paper figures: results and evidence maps (matplotlib) and the recomputation of figure data | `paper_figures/fig_v9_bins.py`, `paper_figures/fig_v10_evidence.py`, `paper_figures/export_evidence_panels.py`, `paper_figures/audit_submission_data.py` |
+| Paper figures 1, 2 and 5: describe / watch / measure, method, conflict modules (isometric SVG in HTML, exported to vector PDF with headless Chrome) | `paper_figures/fig_v13_example.py`, `paper_figures/fig_v13_method.py`, `paper_figures/fig_v13_analysis.py` (+ `_layout`, `_controls`) |
+| Paper figures 3, 4 and 6: gain by conflict strength, accuracy versus training time, evidence maps (matplotlib) | `paper_figures/fig_v13_bins.py`, `paper_figures/fig_v13_cost.py`, `paper_figures/fig_v13_evidence.py` |
+| Earlier figure versions and the recomputation of figure data | `paper_figures/fig_v12_*.py`, `paper_figures/fig_v9_bins.py`, `paper_figures/fig_v10_evidence.py`, `paper_figures/export_evidence_panels.py`, `paper_figures/audit_submission_data.py` |
 
 The `run_*.sh` files are the job queues that produced the reported results, in roughly chronological order; every training script writes
 per-seed `*_test_pred.csv` files, and `audit.py` recomputes all metrics and tests from those files.
@@ -62,6 +69,8 @@ per-seed `*_test_pred.csv` files, and `audit.py` recomputes all metrics and test
 
 - Reported results are means over 10 seeds (CH-SIMS v2) or 5 seeds (MOSI, MOSEI) after uniform tuning on the validation split; the
   "default recipe" (6 epochs, encoder learning rate 2e-5, 5 seeds) is used for controlled representation comparisons.
+- LLM-backbone runs use one fixed recipe for all variants (LoRA r=16, alpha=32 on q/k/v/o, L1 loss, 5 epochs, batch 16, bf16) and 5 seeds
+  (10 for the explicit-module analysis); they were evaluated on CH-SIMS v2 only. The model path is set with `LLM_DIR`.
 - Py-Feat outputs are automatic estimates, not human FACS codes.
 
 ## License
