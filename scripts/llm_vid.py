@@ -144,6 +144,24 @@ def main():
         bs, acc = 2, 1
     steps = (len(sp["train"]) + bs * acc - 1) // (bs * acc) * a.epochs
     sch = get_linear_schedule_with_warmup(opt, int(0.1 * steps), steps); gen = torch.Generator().manual_seed(a.seed)
+    # per-epoch checkpoint, so a run killed by another user's job taking GPU memory resumes from the last finished epoch
+    # (2026-11-19). The effective batch is 16 for every bs, so a resume may switch bs; a resumed run is not bit-identical to an
+    # uninterrupted one (GPU dropout RNG), the same caveat as any rerun.
+    ckpt = os.path.join(OUT, "ckpt", tag + ("_smoke" if smoke else "") + ".pt")
+    start_ep, best, best_ep, hist, state, spent = 0, 1e9, 0, [], None, 0.0
+    if os.path.exists(ckpt):
+        c = torch.load(ckpt, map_location="cpu", weights_only=False)
+        with torch.no_grad():
+            for n, p in base.named_parameters():
+                if p.requires_grad:
+                    p.copy_(c["cur"][0][n].to(p.device, p.dtype))
+        ex.load_state_dict(c["cur"][1]); opt.load_state_dict(c["opt"]); sch.load_state_dict(c["sch"]); gen.set_state(c["gen"])
+        torch.set_rng_state(c["rng"]); np.random.set_state(c["np"])
+        if DEV == "cuda":
+            torch.cuda.set_rng_state(c["cuda"])
+        best, best_ep, hist, state, spent = c["best"], c["best_ep"], c["hist"], c["state"], c["spent"]
+        start_ep = c["ep"] + 1 if c["ep"] - best_ep < 2 else a.epochs
+        print(f"[{tag}] resumed after ep{c['ep']} (best ep{best_ep}, {spent:.0f}s spent)", flush=True)
 
     @torch.no_grad()
     def predict(idx, cond="full"):
@@ -154,8 +172,9 @@ def main():
                 o.append(forward(idx[i:i + 8], cond == "noV", R[perm[i:i + 8]] if cond == "shufD" else None)[0].float().cpu())
         base.train(); ex.train(); return torch.cat(o).numpy()
 
-    best, t0, hist = 1e9, time.time(), []
-    for ep in range(a.epochs):
+    t0 = time.time() - spent
+    die_after = int(os.environ.get("LLM_DIE_AFTER_EP", -1))       # test hook for the resume path
+    for ep in range(start_ep, a.epochs):
         perm = sp["train"][torch.randperm(len(sp["train"]), generator=gen).numpy()]
         for n, i in enumerate(range(0, len(perm), bs)):
             j = perm[i:i + bs]
@@ -174,6 +193,14 @@ def main():
         if vm["mae"] < best:
             best, best_ep = vm["mae"], ep
             state = ({n: p.detach().cpu().clone() for n, p in base.named_parameters() if p.requires_grad}, {k: v.detach().cpu().clone() for k, v in ex.state_dict().items()})
+        os.makedirs(os.path.dirname(ckpt), exist_ok=True)
+        cur_w = ({n: p.detach().cpu().clone() for n, p in base.named_parameters() if p.requires_grad}, {k: v.detach().cpu().clone() for k, v in ex.state_dict().items()})
+        torch.save({"ep": ep, "cur": cur_w, "opt": opt.state_dict(), "sch": sch.state_dict(), "gen": gen.get_state(), "rng": torch.get_rng_state(),
+                    "np": np.random.get_state(), "cuda": torch.cuda.get_rng_state() if DEV == "cuda" else None, "best": best, "best_ep": best_ep,
+                    "hist": hist, "state": state, "spent": time.time() - t0}, ckpt + ".tmp")
+        os.replace(ckpt + ".tmp", ckpt)
+        if ep == die_after:
+            raise SystemExit(f"[{tag}] LLM_DIE_AFTER_EP={die_after}: stopping on purpose after the checkpoint")
         if ep - best_ep >= 2:
             break
     with torch.no_grad():
@@ -192,6 +219,8 @@ def main():
     if not smoke:
         json.dump(res, open(out_json, "w"), indent=1)
         preds.to_csv(os.path.join(OUT, tag + "_test_pred.csv"), index=False)
+    if os.path.exists(ckpt):
+        os.remove(ckpt)
 
 
 if __name__ == "__main__":

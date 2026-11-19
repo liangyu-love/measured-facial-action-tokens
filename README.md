@@ -53,6 +53,7 @@ directories are selected with `MSA_DATA` (e.g. `outputs/full` for CH-SIMS v2, `o
 | Explicit conflict modelling (gates, experts, discrepancy tokens, cross-fitting, capacity controls, speech expert, trust and polarity heads) | `gate_*.py`, `xgate_bert.py`, `evq.py`, `pre_soft.py`, `texp.py`, `diff2.py`, `diff3.py`, `oof_experts.py`, `reg_experts.py`, `aexp.py`, `audio_expert_hubert.py`, `ext_*.py`, `pol_round.py`, `tri3_tuned.py` |
 | **LLM backbone** (Qwen3-VL-4B language model + LoRA): transcript only and + facial action tokens | `llm_pilot.py --variant text / au`, `run_llm_pilot.sh` |
 | LLM backbone: the same model watching the 8 frames through its vision encoder | `llm_vid.py --variant vid` (`LLM_BS` sets the micro-batch), `run_llm3.sh`, `run_llm7.sh` |
+| LLM backbone: frames + facial action tokens together (5 seeds; no significant gain over frames alone) | `llm_vid.py --variant vid_au`, `run_llm9.sh` (resumes from per-epoch checkpoints after a CUDA OOM on a shared GPU; `run_llm8.sh` is the earlier queue) |
 | LLM backbone: expert token + trust head, capacity control (`--vctl zero`), experts without unimodal labels (`--exp m`), speech token, residual on the expert mean (`au_res`, `au_adj`) | `llm_diff.py`, `oof_experts_m.py`, `run_llm2.sh`, `run_llm4.sh`, `run_llm6.sh` |
 | LLM backbone: summary tables, paired tests and the late-average baseline (weight chosen on validation) | `llm_analysis.py`, `llm_adj_analysis.py` |
 | Evidence maps and occlusion | `evi_bert.py`, `evi3.py`, `interp3.py` |
